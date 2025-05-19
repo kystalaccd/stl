@@ -1,0 +1,2 @@
+add_executable(function_test function_test.cpp)
+target_link_libraries(function_test PRIVATE stl)
