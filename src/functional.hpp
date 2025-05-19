@@ -268,6 +268,7 @@ namespace stl{
 
             template<typename F>
             void init(F f, Placement<false>){
+                call_fptr = call<F>;
                 clone_fptr = clone<F>;
                 destruct_fptr = destruct<F>;
                 callable_ptr = new F(f);
