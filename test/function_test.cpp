@@ -1,6 +1,7 @@
 #include "functional.hpp"
 #include <random>
 #include <iostream>
+#include <functional>
 
 namespace{
 
@@ -48,16 +49,16 @@ bool test_member_func(){
     return true;
 }
 
-#if 0    //暂不支持bind函数返回值
 bool test_bind(){
     Obj tmp;
-    int val;
-    stl::function<void(int&)> f(std::bind(&Obj::get_random, &tmp));
-    f(val);
-    std::cout<<val<<std::endl;
+    stl::function<int(const int&, const int&)> f(std::bind(&Obj::multiple, &tmp, std::placeholders::_1, std::placeholders::_2));
+    for(int i=0; i<10000; ++i){
+        auto a = di(de), b=di(de);
+        if(f(a,b) != tmp.multiple(a,b))
+            return false;
+    }
     return true;
 }
-#endif
 
 bool test_static_member_func(){
     stl::function<int(int,int)> f(&Obj::minus);
@@ -71,7 +72,8 @@ bool test_static_member_func(){
 }
 
 bool test_lambda(){
-    auto divide = [](int a, int b)->int{
+    long long i=1,j=2,k=3,w=4,y=5,z=6;
+    auto divide = [i,j,k,w,y,z](int a, int b)mutable->int{
         return a/b;
     };
 
@@ -98,6 +100,10 @@ int main(int argc, char *argv[]){
     std::cout<<"--------------test member function start--------------"<<std::endl;
     std::cout<<(test_member_func()?"pass":"wrong")<<std::endl;
     std::cout<<"---------------test member function end---------------"<<std::endl;
+
+    std::cout<<"--------------test bind start--------------"<<std::endl;
+    std::cout<<(test_bind()?"pass":"wrong")<<std::endl;
+    std::cout<<"---------------test bind end---------------"<<std::endl;
 
     std::cout<<"--------------test static member function start--------------"<<std::endl;
     std::cout<<(test_static_member_func()?"pass.":"wrong")<<std::endl;
