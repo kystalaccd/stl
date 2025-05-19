@@ -2,9 +2,9 @@
 #define __FUNCTIONAL_HPP__
 
 #include <utility>
+#include <cstring>
 
 namespace stl{
-    //暂不支持成员函数
 
     namespace version_0_0{
 
@@ -189,7 +189,7 @@ namespace stl{
 
 
 
-    inline namespace version_0_2{
+    inline namespace version_0_2{   //暂不支持bind函数返回值
 
         template<bool enough>
         struct Placement{ };
@@ -210,6 +210,27 @@ namespace stl{
             template<typename Functor>
             static Res call(function *self, Args... args){
                 return (*static_cast<Functor*>(self->callable_ptr))(std::forward<Args>(args)...);
+            }
+
+            template<typename Class_,typename Arg,typename... ArgTypes>
+            static Res detail_call(function *self, Arg&& obj, ArgTypes&&... args){
+                typedef Res(Class_::*F)(ArgTypes...);
+                F fptr = nullptr;
+                std::memcpy(&fptr, self->callable_ptr, sizeof(F));
+                return (obj.*fptr)(std::forward<ArgTypes>(args)...);
+            }
+
+            template<typename Class_,typename Arg,typename... ArgTypes>
+            static Res detail_call(function *self, Arg *obj, ArgTypes&&... args){
+                typedef Res(Class_::*F)(ArgTypes...);
+                F fptr = nullptr;
+                std::memcpy(&fptr, self->callable_ptr, sizeof(F));
+                return (obj->*fptr)(std::forward<ArgTypes>(args)...);
+            }
+
+            template<typename Class_>
+            static Res mem_call(function *self, Args... args){
+                return detail_call<Class_>(self, std::forward<Args>(args)...);
             }
 
             template<typename Functor>
@@ -247,7 +268,6 @@ namespace stl{
 
             template<typename F>
             void init(F f, Placement<false>){
-                call_fptr = call<F>;
                 clone_fptr = clone<F>;
                 destruct_fptr = destruct<F>;
                 callable_ptr = new F(f);
@@ -276,6 +296,15 @@ namespace stl{
             template<typename F>
             function(F f){
                 init(f, Placement<(sizeof(F) <= sizeof(callable_ptr))>());
+            }
+
+            template<typename Class_, typename... ArgTypes>
+            function(Res(Class_::*f)(ArgTypes...)){
+                call_fptr = mem_call<Class_>;
+                typedef  Res(Class_::*F)(ArgTypes...);
+                clone_fptr = clone<F>;
+                destruct_fptr = destruct<F>;
+                callable_ptr = new F(f);
             }
 
             function(const function &rhs):

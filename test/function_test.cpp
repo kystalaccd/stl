@@ -1,7 +1,6 @@
 #include "functional.hpp"
 #include <random>
 #include <iostream>
-#include <functional>
 
 namespace{
 
@@ -16,8 +15,8 @@ int sum(int a, int b){
 
 class Obj{
 public:
-    void get_random(int &val){
-        val = di(de);
+    int multiple(const int &a, const int &b){
+        return a*b;
     }
 
     static int minus(int a, int b){
@@ -29,7 +28,7 @@ public:
 
 bool test_global_func(){
     stl::function<int(int,int)> f(sum);
-    for(int i=0; i<1000; ++i){
+    for(int i=0; i<10000; ++i){
         auto a = di(de), b=di(de);
         if(f(a,b) != sum(a,b))
             return false;
@@ -38,17 +37,19 @@ bool test_global_func(){
     return true;
 }
 
-#if 0
-bool test_member_func(){    //暂不支持成员函数
+bool test_member_func(){
     Obj tmp;
-    int val;
-    stl::function<void(Obj &, int&)> f(&Obj::get_random);
-    f(tmp, val);
-    std::cout<<val<<std::endl;
+    stl::function<int(Obj *, const int&, const int&)> f(&Obj::multiple);
+    for(int i=0; i<10000; ++i){
+        auto a = di(de), b=di(de);
+        if(f(&tmp,a,b) != tmp.multiple(a,b))
+            return false;
+    }
     return true;
 }
 
-bool test_member_func2(){
+#if 0    //暂不支持bind函数返回值
+bool test_bind(){
     Obj tmp;
     int val;
     stl::function<void(int&)> f(std::bind(&Obj::get_random, &tmp));
@@ -60,7 +61,7 @@ bool test_member_func2(){
 
 bool test_static_member_func(){
     stl::function<int(int,int)> f(&Obj::minus);
-    for(int i=0; i<1000; ++i){
+    for(int i=0; i<10000; ++i){
         auto a = di(de), b=di(de);
         if(f(a,b) != Obj::minus(a,b))
             return false;
@@ -76,7 +77,7 @@ bool test_lambda(){
 
     stl::function<int(int,int)> f(divide);
     
-    for(int i=0; i<1000; ++i){
+    for(int i=0; i<10000; ++i){
         int a = di(de), b;
         do{
             b = di(de);
@@ -94,11 +95,9 @@ int main(int argc, char *argv[]){
     std::cout<<(test_global_func()?"pass.":"wrong.")<<std::endl;
     std::cout<<"---------------test global function end---------------"<<std::endl;
 
-#if 0
     std::cout<<"--------------test member function start--------------"<<std::endl;
     std::cout<<(test_member_func()?"pass":"wrong")<<std::endl;
     std::cout<<"---------------test member function end---------------"<<std::endl;
-#endif
 
     std::cout<<"--------------test static member function start--------------"<<std::endl;
     std::cout<<(test_static_member_func()?"pass.":"wrong")<<std::endl;
@@ -108,5 +107,6 @@ int main(int argc, char *argv[]){
     std::cout<<(test_lambda()?"pass.":"wrong")<<std::endl;
     std::cout<<"---------------test lambda end---------------"<<std::endl;
 
+    std::cout<<"All Pass!"<<std::endl;
     return 0;
 }
