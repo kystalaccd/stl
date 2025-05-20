@@ -16,7 +16,7 @@ int sum(int a, int b){
 
 class Obj{
 public:
-    int multiple(const int &a, const int &b){
+    virtual int multiple(const int &a, const int &b){
         return a*b;
     }
 
@@ -92,26 +92,49 @@ bool test_lambda(){
     return true;
 }
 
+bool test_assign_copy(){
+    stl::function<int(int,int)> f;
+    f = sum;
+    if(f(1,2) == sum(1,2))
+        return true;
+    return false;
+}
+
+bool test_relations_ship(){
+    stl::function<void(float,int)> f;
+    if(f == nullptr)
+        return true;
+    return false;
+}
+
 int main(int argc, char *argv[]){
     std::cout<<"--------------test global function start--------------"<<std::endl;
     std::cout<<(test_global_func()?"pass.":"wrong.")<<std::endl;
-    std::cout<<"---------------test global function end---------------"<<std::endl;
+    std::cout<<"---------------test global function end---------------"<<std::endl<<std::endl;
 
     std::cout<<"--------------test member function start--------------"<<std::endl;
     std::cout<<(test_member_func()?"pass":"wrong")<<std::endl;
-    std::cout<<"---------------test member function end---------------"<<std::endl;
+    std::cout<<"---------------test member function end---------------"<<std::endl<<std::endl;
 
     std::cout<<"--------------test bind start--------------"<<std::endl;
     std::cout<<(test_bind()?"pass":"wrong")<<std::endl;
-    std::cout<<"---------------test bind end---------------"<<std::endl;
+    std::cout<<"---------------test bind end---------------"<<std::endl<<std::endl;
 
     std::cout<<"--------------test static member function start--------------"<<std::endl;
     std::cout<<(test_static_member_func()?"pass.":"wrong")<<std::endl;
-    std::cout<<"---------------test static member function end---------------"<<std::endl;
+    std::cout<<"---------------test static member function end---------------"<<std::endl<<std::endl;
 
     std::cout<<"--------------test lambda start--------------"<<std::endl;
     std::cout<<(test_lambda()?"pass.":"wrong")<<std::endl;
-    std::cout<<"---------------test lambda end---------------"<<std::endl;
+    std::cout<<"---------------test lambda end---------------"<<std::endl<<std::endl;
+
+    std::cout<<"--------------test assgin copy start--------------"<<std::endl;
+    std::cout<<(test_assign_copy()?"pass.":"wrong")<<std::endl;
+    std::cout<<"--------------test assgin copy start--------------"<<std::endl<<std::endl;
+
+    std::cout<<"--------------test relations ship start--------------"<<std::endl;
+    std::cout<<(test_relations_ship()?"pass.":"wrong")<<std::endl;
+    std::cout<<"--------------test relations ship start--------------"<<std::endl<<std::endl;
 
     std::cout<<"All Pass!"<<std::endl;
     return 0;

@@ -189,7 +189,7 @@ namespace stl{
 
 
 
-    inline namespace version_0_2{   //暂不支持bind函数返回值
+    inline namespace version_0_2{
 
         template<bool enough>
         struct Placement{ };
@@ -199,8 +199,18 @@ namespace stl{
         class function;
 
 
+        template<typename Res, typename... Args> bool operator==(const function<Res(Args...)> &lhs, std::nullptr_t rhs)noexcept;
+        template<typename Res, typename... Args> bool operator==(std::nullptr_t lhs, const function<Res(Args...)> &rhs)noexcept;
+        template<typename Res, typename... Args> bool operator!=(const function<Res(Args...)> &lhs, std::nullptr_t rhs)noexcept;
+        template<typename Res, typename... Args> bool operator!=(std::nullptr_t lhs, const function<Res(Args...)> &rhs)noexcept;
+
         template<typename Res, typename... Args>
         class function<Res(Args...)>{
+            friend bool operator==<Res,Args...>(const function &lhs, std::nullptr_t rhs);
+            friend bool operator==<Res,Args...>(std::nullptr_t lhs, const function &rhs);
+            friend bool operator!=<Res,Args...>(const function &lhs, std::nullptr_t rhs);
+            friend bool operator!=<Res,Args...>(std::nullptr_t lhs, const function &rhs);
+
             Res (*call_fptr)(function*, Args...);
             void (*clone_fptr)(function *, const function*);
             void (*destruct_fptr)(function*);
@@ -291,7 +301,8 @@ namespace stl{
             }
 
             ~function(){
-                destruct_fptr(this);
+                if(destruct_fptr)
+                    destruct_fptr(this);
             }
 
             template<typename F>
@@ -312,7 +323,9 @@ namespace stl{
                 call_fptr(rhs.call_fpr),
                 clone_fptr(rhs.clone_fptr),
                 destruct_fptr(rhs.destruct_fptr),
-                callable_ptr(clone_fptr(&rhs)) {
+                callable_ptr(nullptr) {
+                if(clone_fptr)
+                    clone_fptr(callable_ptr, rhs.callable_ptr);
             }
 
             function(function &&rhs)noexcept:
@@ -327,8 +340,11 @@ namespace stl{
             }
 
             function &operator=(const function &rhs){
-                auto tmp = rhs.clone_fptr(&rhs);
-                destruct_fptr(this);
+                function *tmp = nullptr;
+                if(rhs.clone_fptr)
+                    rhs.clone_fptr(tmp, &rhs);
+                if(destruct_fptr)
+                    destruct_fptr(this);
                 callable_ptr = tmp;
                 clone_fptr = rhs.clone_fptr;
                 call_fptr = rhs.call_fptr;
@@ -338,7 +354,8 @@ namespace stl{
 
             function &operator=(function &&rhs)noexcept{
                 if(this != &rhs){
-                    destruct_fptr(this);
+                    if(destruct_fptr)
+                        destruct_fptr(this);
                     call_fptr = rhs.call_fptr;
                     clone_fptr = rhs.clone_fptr;
                     destruct_fptr = rhs.destruct_fptr;
@@ -352,10 +369,40 @@ namespace stl{
                 return *this;
             }
 
+            function &operator=(std::nullptr_t rhs)noexcept{
+                if(destruct_fptr)
+                    destruct_fptr(this);
+                call_fptr = nullptr;
+                clone_fptr = nullptr;
+                destruct_fptr = nullptr;
+                callable_ptr = nullptr;
+                return *this;
+            }
+
             Res operator()(Args... args){
                 return call_fptr(this, std::forward<Args>(args)...);
             }
         };
+
+        template<typename Res, typename... Args>
+        bool operator==(const function<Res(Args...)> &lhs, std::nullptr_t rhs)noexcept{
+            return lhs.callable_ptr == rhs;
+        }
+
+        template<typename Res, typename... Args>
+        bool operator==(std::nullptr_t lhs, const function<Res(Args...)> &rhs)noexcept{
+            return rhs == lhs;
+        }
+
+        template<typename Res, typename... Args>
+        bool operator!=(const function<Res(Args...)> &lhs, std::nullptr_t rhs)noexcept{
+            return !(lhs == rhs);
+        }
+
+        template<typename Res, typename... Args>
+        bool operator!=(std::nullptr_t lhs, const function<Res(Args...)> &rhs)noexcept{
+            return !(lhs == rhs);
+        }
 
     }   //!version_0_2
 
