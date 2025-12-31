@@ -1,2 +1,5 @@
 add_executable(function_test function_test.cpp)
+add_executable(efficient_list_test efficient_list_test.cpp)
+
 target_link_libraries(function_test PRIVATE stl)
+target_link_libraries(efficient_list_test PRIVATE stl)

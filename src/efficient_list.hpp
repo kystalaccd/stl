@@ -119,7 +119,7 @@ namespace stl{
             }
 
             bool empty()const{
-                return root;
+                return !root;
             }
 
         public:

@@ -137,7 +137,7 @@ namespace stl{
             }
 
             function(const function &rhs):
-                call_fptr(rhs.call_fpr),
+                call_fptr(rhs.call_fptr),
                 clone_fptr(rhs.clone_fptr),
                 destruct_fptr(rhs.destruct_fptr),
                 callable_ptr(clone_fptr(&rhs)) {
@@ -320,7 +320,7 @@ namespace stl{
             }
 
             function(const function &rhs):
-                call_fptr(rhs.call_fpr),
+                call_fptr(rhs.call_fptr),
                 clone_fptr(rhs.clone_fptr),
                 destruct_fptr(rhs.destruct_fptr),
                 callable_ptr(nullptr) {
